@@ -51,7 +51,8 @@ export function LibraryClient({
     const q = query.trim().toLowerCase();
     let result = prompts.filter((p) => {
       if (favOnly && !p.favorite) return false;
-      if (selectedCategories.length && !selectedCategories.includes(p.categoryId ?? "")) return false;
+      if (selectedCategories.length && !selectedCategories.some((id) => p.categoryIds.includes(id)))
+        return false;
       if (selectedTags.length && !selectedTags.every((t) => p.tags.includes(t))) return false;
       if (q) {
         const haystack = `${p.title} ${p.content} ${p.tags.join(" ")}`.toLowerCase();
@@ -70,7 +71,7 @@ export function LibraryClient({
   }, [prompts, query, sort, selectedCategories, selectedTags, favOnly]);
 
   const visible = filtered.slice(0, visibleCount);
-  const categoryCount = (id: string) => prompts.filter((p) => p.categoryId === id).length;
+  const categoryCount = (id: string) => prompts.filter((p) => p.categoryIds.includes(id)).length;
 
   return (
     <div className="mx-auto max-w-6xl px-8 py-8">
@@ -241,7 +242,11 @@ export function LibraryClient({
               }
             >
               {visible.map((p) => (
-                <PromptCard key={p.id} prompt={p} category={categoryLookup.get(p.categoryId ?? "")} />
+                <PromptCard
+                  key={p.id}
+                  prompt={p}
+                  categories={p.categoryIds.map((id) => categoryLookup.get(id)).filter((c): c is CategoryDTO => Boolean(c))}
+                />
               ))}
             </div>
           )}

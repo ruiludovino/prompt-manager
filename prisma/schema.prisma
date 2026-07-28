@@ -86,7 +86,7 @@ model Category {
   icon        String        @default("")
   createdAt   DateTime      @default(now())
 
-  prompts Prompt[]
+  prompts PromptCategory[]
 }
 
 model Prompt {
@@ -105,16 +105,27 @@ model Prompt {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  ownerId    String
-  owner      User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  favorites Favorite[]
+  categories PromptCategory[]
+  favorites  Favorite[]
 
   @@index([ownerId])
-  @@index([categoryId])
   @@index([visibility])
+}
+
+// Join table so a prompt can belong to multiple categories (and vice versa).
+model PromptCategory {
+  promptId   String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  prompt   Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([promptId, categoryId])
+  @@index([categoryId])
 }
 
 // Per-user favorite so favoriting a team-shared prompt doesn't affect other viewers.

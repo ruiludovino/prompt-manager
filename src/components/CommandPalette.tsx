@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import type { CategoryDTO, PromptDTO } from "@/lib/types";
-import { CategoryPill } from "./CategoryBadge";
+import { CategoryPills } from "./CategoryBadge";
 
 export function CommandPalette({
   prompts,
@@ -79,7 +79,7 @@ export function CommandPalette({
             <p className="px-3 py-6 text-center text-sm text-text-faint">No prompts found.</p>
           )}
           {results.map((p) => {
-            const category = categories.find((c) => c.id === p.categoryId);
+            const promptCategories = categories.filter((c) => p.categoryIds.includes(c.id));
             return (
               <button
                 key={p.id}
@@ -90,7 +90,7 @@ export function CommandPalette({
                 className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm hover:bg-surface-high"
               >
                 <span className="truncate text-text">{p.title}</span>
-                <CategoryPill category={category} />
+                <CategoryPills categories={promptCategories} />
               </button>
             );
           })}

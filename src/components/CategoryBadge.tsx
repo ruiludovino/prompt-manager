@@ -38,6 +38,17 @@ export function CategoryPill({ category }: { category: CategoryLike }) {
   );
 }
 
+export function CategoryPills({ categories }: { categories: CategoryDTO[] }) {
+  if (categories.length === 0) return <CategoryPill category={undefined} />;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {categories.map((c) => (
+        <CategoryPill key={c.id} category={c} />
+      ))}
+    </div>
+  );
+}
+
 export function TagChip({ label }: { label: string }) {
   return (
     <span className="whitespace-nowrap rounded-full border border-border bg-surface-high px-2.5 py-0.5 text-xs text-text-muted">

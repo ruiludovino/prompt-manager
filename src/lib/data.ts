@@ -3,7 +3,11 @@ import type { CategoryDTO, PromptDTO } from "@/lib/types";
 import type { Prisma } from "@prisma/client";
 
 type PromptWithRelations = Prisma.PromptGetPayload<{
-  include: { favorites: true; owner: { select: { id: true; name: true } } };
+  include: {
+    favorites: true;
+    owner: { select: { id: true; name: true } };
+    categories: { select: { categoryId: true } };
+  };
 }>;
 
 function toPromptDTO(p: PromptWithRelations, userId: string): PromptDTO {
@@ -11,7 +15,7 @@ function toPromptDTO(p: PromptWithRelations, userId: string): PromptDTO {
     id: p.id,
     title: p.title,
     content: p.content,
-    categoryId: p.categoryId,
+    categoryIds: p.categories.map((c) => c.categoryId),
     tags: p.tags,
     favorite: p.favorites.some((f) => f.userId === userId),
     model: p.model,
@@ -33,6 +37,7 @@ function toPromptDTO(p: PromptWithRelations, userId: string): PromptDTO {
 const promptInclude = {
   favorites: true,
   owner: { select: { id: true, name: true } as const },
+  categories: { select: { categoryId: true } as const },
 } satisfies Prisma.PromptInclude;
 
 export async function getPrompts(userId: string): Promise<PromptDTO[]> {

@@ -7,6 +7,7 @@ import { createPrompt, updatePrompt, createCategory } from "@/lib/actions";
 import { AI_MODELS, CATEGORY_COLOR_SWATCH, CATEGORY_COLORS, extractVariables } from "@/lib/types";
 import type { CategoryColor, CategoryDTO, PromptDTO, Visibility } from "@/lib/types";
 import { PromptText } from "./PromptText";
+import { IconPicker } from "./IconPicker";
 
 export function PromptEditorForm({
   categories,
@@ -21,7 +22,7 @@ export function PromptEditorForm({
 
   const [title, setTitle] = useState(existing?.title ?? "");
   const [content, setContent] = useState(existing?.content ?? "");
-  const [categoryId, setCategoryId] = useState<string | null>(existing?.categoryId ?? null);
+  const [categoryIds, setCategoryIds] = useState<string[]>(existing?.categoryIds ?? []);
   const [tags, setTags] = useState<string[]>(existing?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
   const [model, setModel] = useState(existing?.model ?? AI_MODELS[0]);
@@ -36,6 +37,7 @@ export function PromptEditorForm({
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState<CategoryColor>("violet");
+  const [newCategoryIcon, setNewCategoryIcon] = useState("Tag");
   const [saving, setSaving] = useState(false);
   const [localCategories, setLocalCategories] = useState(categories);
 
@@ -58,6 +60,10 @@ export function PromptEditorForm({
     });
   };
 
+  const toggleCategory = (id: string) => {
+    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+  };
+
   const addTag = () => {
     const t = tagInput.trim().replace(/^#/, "");
     if (t && !tags.includes(t)) setTags((prev) => [...prev, t]);
@@ -67,14 +73,26 @@ export function PromptEditorForm({
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
-    const id = await createCategory({ name: newCategoryName.trim(), color: newCategoryColor });
+    const id = await createCategory({
+      name: newCategoryName.trim(),
+      color: newCategoryColor,
+      icon: newCategoryIcon,
+    });
     setLocalCategories((prev) => [
       ...prev,
-      { id, name: newCategoryName.trim(), description: "", color: newCategoryColor, icon: "", promptCount: 0 },
+      {
+        id,
+        name: newCategoryName.trim(),
+        description: "",
+        color: newCategoryColor,
+        icon: newCategoryIcon,
+        promptCount: 0,
+      },
     ]);
-    setCategoryId(id);
+    setCategoryIds((prev) => [...prev, id]);
     setShowNewCategory(false);
     setNewCategoryName("");
+    setNewCategoryIcon("Tag");
   };
 
   const handleSave = async () => {
@@ -83,7 +101,7 @@ export function PromptEditorForm({
     const payload = {
       title: title.trim(),
       content,
-      categoryId,
+      categoryIds,
       tags,
       model,
       temperature,
@@ -223,24 +241,33 @@ export function PromptEditorForm({
         <div className="space-y-5">
           <div className="rounded-xl border border-border bg-surface p-4">
             <label className="text-xs font-semibold uppercase tracking-wide text-text-faint">
-              Category
+              Categories
             </label>
-            <select
-              value={categoryId ?? ""}
-              onChange={(e) => {
-                if (e.target.value === "__new") setShowNewCategory(true);
-                else setCategoryId(e.target.value || null);
-              }}
-              className="mt-2 w-full rounded-md border border-border bg-surface-high px-3 py-2 text-sm text-text focus:border-primary focus:outline-none"
-            >
-              <option value="">Uncategorized</option>
+            <div className="mt-2 space-y-1">
+              {localCategories.length === 0 && (
+                <p className="text-sm text-text-faint">No categories yet.</p>
+              )}
               {localCategories.map((c) => (
-                <option key={c.id} value={c.id}>
+                <label
+                  key={c.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-sm text-text-muted hover:bg-surface-high"
+                >
+                  <input
+                    type="checkbox"
+                    checked={categoryIds.includes(c.id)}
+                    onChange={() => toggleCategory(c.id)}
+                    className="accent-primary"
+                  />
                   {c.name}
-                </option>
+                </label>
               ))}
-              <option value="__new">+ Create new category</option>
-            </select>
+            </div>
+            <button
+              onClick={() => setShowNewCategory((v) => !v)}
+              className="mt-2 flex items-center gap-1.5 text-xs text-secondary hover:underline"
+            >
+              <Plus size={13} /> Create new category
+            </button>
 
             {showNewCategory && (
               <div className="mt-3 space-y-2 rounded-md border border-border-soft bg-surface-high p-3">
@@ -265,6 +292,7 @@ export function PromptEditorForm({
                     />
                   ))}
                 </div>
+                <IconPicker value={newCategoryIcon} onChange={setNewCategoryIcon} />
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateCategory}

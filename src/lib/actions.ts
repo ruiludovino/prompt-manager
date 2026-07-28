@@ -39,7 +39,7 @@ async function notifyTeamShareIfNeeded(promptId: string, sharerId: string, wasTe
 export interface PromptInput {
   title: string;
   content: string;
-  categoryId: string | null;
+  categoryIds: string[];
   tags: string[];
   model: string;
   temperature: number;
@@ -51,10 +51,12 @@ export interface PromptInput {
 
 export async function createPrompt(input: PromptInput) {
   const userId = await requireUserId();
+  const { categoryIds, ...rest } = input;
   const created = await prisma.prompt.create({
     data: {
-      ...input,
+      ...rest,
       ownerId: userId,
+      categories: { create: categoryIds.map((categoryId) => ({ categoryId })) },
     },
   });
   await notifyTeamShareIfNeeded(created.id, userId, false);
@@ -69,7 +71,17 @@ export async function updatePrompt(id: string, input: PromptInput) {
   if (!existing || existing.ownerId !== userId) throw new Error("Not allowed");
 
   const wasTeamBefore = existing.visibility === "team";
-  await prisma.prompt.update({ where: { id }, data: input });
+  const { categoryIds, ...rest } = input;
+  await prisma.prompt.update({
+    where: { id },
+    data: {
+      ...rest,
+      categories: {
+        deleteMany: {},
+        create: categoryIds.map((categoryId) => ({ categoryId })),
+      },
+    },
+  });
   await notifyTeamShareIfNeeded(id, userId, wasTeamBefore);
 
   revalidatePath("/");
@@ -90,6 +102,7 @@ export async function duplicatePrompt(id: string) {
   const userId = await requireUserId();
   const source = await prisma.prompt.findFirst({
     where: { id, OR: [{ ownerId: userId }, { visibility: "team" }] },
+    include: { categories: { select: { categoryId: true } } },
   });
   if (!source) throw new Error("Not found");
 
@@ -97,7 +110,6 @@ export async function duplicatePrompt(id: string) {
     data: {
       title: `${source.title} (Copy)`,
       content: source.content,
-      categoryId: source.categoryId,
       tags: source.tags,
       model: source.model,
       temperature: source.temperature,
@@ -106,6 +118,9 @@ export async function duplicatePrompt(id: string) {
       variableNotes: source.variableNotes ?? {},
       notes: source.notes,
       ownerId: userId,
+      categories: {
+        create: source.categories.map((c) => ({ categoryId: c.categoryId })),
+      },
     },
   });
   revalidatePath("/");
@@ -161,7 +176,7 @@ export async function createCategory(input: {
 
 export async function updateCategory(
   id: string,
-  input: Partial<{ name: string; color: CategoryColor }>,
+  input: Partial<{ name: string; color: CategoryColor; icon: string }>,
 ) {
   await requireUserId();
   await prisma.category.update({ where: { id }, data: input });

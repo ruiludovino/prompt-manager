@@ -3,11 +3,12 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical, Pencil, Palette, Trash2, Plus, X } from "lucide-react";
+import { MoreVertical, Pencil, Palette, Shapes, Trash2, Plus, X } from "lucide-react";
 import { createCategory, updateCategory, deleteCategory } from "@/lib/actions";
 import { CATEGORY_COLORS, CATEGORY_COLOR_SWATCH } from "@/lib/types";
 import type { CategoryColor, CategoryDTO } from "@/lib/types";
 import { CategoryIconBadge } from "@/components/CategoryBadge";
+import { IconPicker } from "@/components/IconPicker";
 
 function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount: number }) {
   const router = useRouter();
@@ -16,6 +17,7 @@ function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount:
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [pickingColor, setPickingColor] = useState(false);
+  const [pickingIcon, setPickingIcon] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [name, setName] = useState(category.name);
 
@@ -36,6 +38,14 @@ function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount:
     setPickingColor(false);
     startTransition(async () => {
       await updateCategory(category.id, { color: c });
+      router.refresh();
+    });
+  };
+
+  const setIcon = (icon: string) => {
+    setPickingIcon(false);
+    startTransition(async () => {
+      await updateCategory(category.id, { icon });
       router.refresh();
     });
   };
@@ -78,6 +88,15 @@ function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount:
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text-muted hover:bg-surface-highest"
               >
                 <Palette size={13} /> Change Color
+              </button>
+              <button
+                onClick={() => {
+                  setPickingIcon(true);
+                  setMenuOpen(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text-muted hover:bg-surface-highest"
+              >
+                <Shapes size={13} /> Change Icon
               </button>
               <button
                 onClick={() => {
@@ -131,6 +150,12 @@ function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount:
         </div>
       )}
 
+      {pickingIcon && (
+        <div className="mt-2">
+          <IconPicker value={category.icon} onChange={setIcon} />
+        </div>
+      )}
+
       <p className="mt-1 text-xs text-text-faint">{category.description || "No description"}</p>
       <p className="mt-2 text-xs text-text-muted">
         {category.promptCount} prompt{category.promptCount === 1 ? "" : "s"}
@@ -142,7 +167,9 @@ function CategoryCard({ category, maxCount }: { category: CategoryDTO; maxCount:
 
       {confirmingDelete && (
         <div className="absolute inset-0 flex flex-col justify-center gap-2 rounded-xl border border-danger/40 bg-bg-raised/95 p-4 text-sm">
-          <p className="text-text">Delete "{category.name}"? Prompts become uncategorized.</p>
+          <p className="text-text">
+            Delete "{category.name}"? Prompts keep their other categories.
+          </p>
           <div className="flex gap-2">
             <button
               onClick={() => setConfirmingDelete(false)}
@@ -174,13 +201,15 @@ export function CategoriesClient({
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState<CategoryColor>("violet");
+  const [newIcon, setNewIcon] = useState("Tag");
 
   const maxCount = Math.max(1, ...categories.map((c) => c.promptCount));
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    await createCategory({ name: newName.trim(), color: newColor });
+    await createCategory({ name: newName.trim(), color: newColor, icon: newIcon });
     setNewName("");
+    setNewIcon("Tag");
     setShowNew(false);
     router.refresh();
   };
@@ -231,6 +260,7 @@ export function CategoriesClient({
                 />
               ))}
             </div>
+            <IconPicker value={newIcon} onChange={setNewIcon} />
             <div className="flex gap-2">
               <button
                 onClick={handleCreate}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight, Cpu, History, Lightbulb, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { getPrompt, getCategories } from "@/lib/data";
-import { CategoryPill, TagChip } from "@/components/CategoryBadge";
+import { CategoryPills, TagChip } from "@/components/CategoryBadge";
 import { PromptText } from "@/components/PromptText";
 import { PromptDetailActions } from "@/components/PromptDetailActions";
 import { formatDate, formatRelativeTime } from "@/lib/format";
@@ -16,7 +16,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
   const [prompt, categories] = await Promise.all([getPrompt(id, userId), getCategories()]);
   if (!prompt) notFound();
 
-  const category = categories.find((c) => c.id === prompt.categoryId);
+  const promptCategories = categories.filter((c) => prompt.categoryIds.includes(c.id));
 
   return (
     <div className="mx-auto max-w-6xl px-8 py-8">
@@ -25,7 +25,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
           Library
         </Link>
         <ChevronRight size={14} />
-        <span>{category?.name ?? "Uncategorized"}</span>
+        <span>{promptCategories.map((c) => c.name).join(", ") || "Uncategorized"}</span>
         <ChevronRight size={14} />
         <span className="text-text-muted">{prompt.title}</span>
       </div>
@@ -34,7 +34,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-2xl font-semibold text-text">{prompt.title}</h1>
-            <CategoryPill category={category} />
+            <CategoryPills categories={promptCategories} />
             {prompt.visibility === "team" && (
               <span className="flex items-center gap-1 rounded-full border border-secondary/40 bg-secondary-soft px-2.5 py-1 text-xs text-secondary">
                 <Users size={12} /> Team Shared

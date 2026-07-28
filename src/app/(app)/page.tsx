@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FileText, FolderKanban, Star, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { auth } from "@/auth";
 import { getPrompts, getCategories } from "@/lib/data";
+import type { CategoryDTO } from "@/lib/types";
 import { PromptCard } from "@/components/PromptCard";
 import { CategoryIconBadge } from "@/components/CategoryBadge";
 
@@ -80,7 +81,11 @@ export default async function DashboardPage() {
           </p>
         )}
         {recent.map((p) => (
-          <PromptCard key={p.id} prompt={p} category={categoryLookup.get(p.categoryId ?? "")} />
+          <PromptCard
+            key={p.id}
+            prompt={p}
+            categories={p.categoryIds.map((id) => categoryLookup.get(id)).filter((c): c is CategoryDTO => Boolean(c))}
+          />
         ))}
       </div>
 

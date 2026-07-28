@@ -36,7 +36,7 @@ export interface PromptDTO {
   id: string;
   title: string;
   content: string;
-  categoryId: string | null;
+  categoryIds: string[];
   tags: string[];
   favorite: boolean;
   model: string;

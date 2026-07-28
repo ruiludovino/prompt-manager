@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import { Copy, Check, Star } from "lucide-react";
 import type { CategoryDTO, PromptDTO } from "@/lib/types";
 import { toggleFavorite, recordUsage } from "@/lib/actions";
-import { CategoryPill, TagChip } from "./CategoryBadge";
+import { CategoryPills, TagChip } from "./CategoryBadge";
 import { PromptText } from "./PromptText";
 import { formatRelativeTime } from "@/lib/format";
 
 export function PromptCard({
   prompt,
-  category,
+  categories,
 }: {
   prompt: PromptDTO;
-  category: CategoryDTO | undefined;
+  categories: CategoryDTO[];
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -57,7 +57,7 @@ export function PromptCard({
         <h3 className="font-display text-[15px] font-medium leading-snug text-text">
           {prompt.title}
         </h3>
-        <CategoryPill category={category} />
+        <CategoryPills categories={categories} />
       </div>
 
       <div className="rounded-lg border border-border-soft bg-surface-high/60 p-3">
