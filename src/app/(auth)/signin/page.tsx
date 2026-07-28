@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import { signIn } from "@/auth";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +19,8 @@ export default function SignInPage({
   return (
     <div className="glow-violet flex min-h-screen w-full items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8 text-center">
-        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white">
-          <Sparkles size={22} strokeWidth={2.25} />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white">
+          <Image src="/logo-icon.png" alt="" width={64} height={64} className="h-full w-full object-contain" />
         </div>
         <h1 className="mt-5 font-display text-xl font-semibold text-text">PromptVault</h1>
         <p className="mt-2 text-sm text-text-muted">

@@ -10,7 +10,6 @@ import {
   Star,
   BookOpen,
   Plus,
-  Sparkles,
 } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
@@ -32,8 +31,8 @@ export function Sidebar({
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-border bg-bg-raised">
       <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-          <Sparkles size={17} strokeWidth={2.25} />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white">
+          <Image src="/logo-icon.png" alt="" width={32} height={32} className="h-full w-full object-contain" />
         </div>
         <span className="font-display text-[17px] font-semibold tracking-tight text-text">
           PromptVault
