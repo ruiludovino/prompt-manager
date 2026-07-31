@@ -231,7 +231,7 @@ export function PromptEditorForm({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={15}
               placeholder="Any tips for getting the best results from this prompt..."
               className="mt-2 w-full rounded-md border border-border bg-surface-high px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none"
             />

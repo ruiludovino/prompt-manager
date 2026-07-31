@@ -9,17 +9,20 @@ import { toggleFavorite, recordUsage, duplicatePrompt, deletePrompt } from "@/li
 export function PromptDetailActions({
   promptId,
   content,
+  notes,
   isOwner,
   initialFavorite,
 }: {
   promptId: string;
   content: string;
+  notes?: string;
   isOwner: boolean;
   initialFavorite: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
+  const [notesCopied, setNotesCopied] = useState(false);
   const [favorite, setFavorite] = useState(initialFavorite);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -35,6 +38,17 @@ export function PromptDetailActions({
       await recordUsage(promptId);
       router.refresh();
     });
+  };
+
+  const handleCopyNotes = async () => {
+    if (!notes) return;
+    try {
+      await navigator.clipboard.writeText(notes);
+    } catch {
+      /* clipboard unavailable */
+    }
+    setNotesCopied(true);
+    setTimeout(() => setNotesCopied(false), 1500);
   };
 
   const handleFavorite = () => {
@@ -69,6 +83,15 @@ export function PromptDetailActions({
           {copied ? <Check size={15} /> : <Copy size={15} />}
           {copied ? "Copied" : "Copy Prompt"}
         </button>
+        {notes && (
+          <button
+            onClick={handleCopyNotes}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm text-text-muted transition hover:bg-surface-high hover:text-text"
+          >
+            {notesCopied ? <Check size={15} /> : <Copy size={15} />}
+            {notesCopied ? "Copied" : "Copy Notes"}
+          </button>
+        )}
         {isOwner && (
           <Link
             href={`/prompts/${promptId}/edit`}

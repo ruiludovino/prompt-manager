@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Cpu, History, Lightbulb, Users } from "lucide-react";
+import { ChevronRight, Cpu, History, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { getPrompt, getCategories } from "@/lib/data";
 import { CategoryPills, TagChip } from "@/components/CategoryBadge";
 import { PromptText } from "@/components/PromptText";
 import { PromptDetailActions } from "@/components/PromptDetailActions";
+import { NotesCard } from "@/components/NotesCard";
 import { formatDate, formatRelativeTime } from "@/lib/format";
 
 export default async function PromptDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -54,6 +55,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
         <PromptDetailActions
           promptId={prompt.id}
           content={prompt.content}
+          notes={prompt.notes}
           isOwner={prompt.isOwner}
           initialFavorite={prompt.favorite}
         />
@@ -81,15 +83,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
             </div>
           )}
 
-          {prompt.notes && (
-            <div className="rounded-xl border border-border bg-surface p-5">
-              <h2 className="flex items-center gap-2 font-display text-sm font-semibold text-text">
-                <Lightbulb size={15} className="text-amber-400" />
-                Notes &amp; Usage Tips
-              </h2>
-              <p className="mt-2 text-sm text-text-muted">{prompt.notes}</p>
-            </div>
-          )}
+          {prompt.notes && <NotesCard notes={prompt.notes} />}
         </div>
 
         <div className="space-y-6">
